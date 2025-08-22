@@ -38,3 +38,9 @@ for i in df2.columns:
         
         
 df2=df2.drop(columns_to_be_removed,axis=1)
+
+for i in df2.columns:
+    df2 = df2.loc[ df2[i] != -99999 ]
+
+df1.isnull().sum()
+df2.isnull().sum()
