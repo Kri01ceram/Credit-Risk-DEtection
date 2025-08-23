@@ -53,3 +53,17 @@ for i in list(df1.columns):
 # Merge the two dataframes, inner join so that no nulls are present
 df = pd. merge ( df1, df2, how ='inner', left_on = ['PROSPECTID'], right_on = ['PROSPECTID'] )
 
+#Now we will categorise our dataset on categorical and numerical and work on them differently.
+
+# check how many columns are categorical
+for i in df.columns:
+    if df[i].dtype == 'object':
+        print(i)
+   
+
+
+# Chi-square test
+for i in ['MARITALSTATUS', 'EDUCATION', 'GENDER', 'last_prod_enq2', 'first_prod_enq2']:
+    chi2, pval, _, _ = chi2_contingency(pd.crosstab(df[i], df['Approved_Flag']))
+    print(i, '---', pval)
+    
