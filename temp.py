@@ -44,3 +44,12 @@ for i in df2.columns:
 
 df1.isnull().sum()
 df2.isnull().sum()
+
+#checking for common column
+for i in list(df1.columns):
+    if i in list(df2.columns):
+        print (i)
+        
+# Merge the two dataframes, inner join so that no nulls are present
+df = pd. merge ( df1, df2, how ='inner', left_on = ['PROSPECTID'], right_on = ['PROSPECTID'] )
+
