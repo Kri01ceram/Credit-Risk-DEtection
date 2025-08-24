@@ -67,3 +67,32 @@ for i in ['MARITALSTATUS', 'EDUCATION', 'GENDER', 'last_prod_enq2', 'first_prod_
     chi2, pval, _, _ = chi2_contingency(pd.crosstab(df[i], df['Approved_Flag']))
     print(i, '---', pval)
     
+# VIF for numerical columns
+numeric_columns = []
+for i in df.columns:
+    if df[i].dtype != 'object' and i not in ['PROSPECTID','Approved_Flag']:
+        numeric_columns.append(i)
+        
+# VIF sequentially check
+
+vif_data = df[numeric_columns]
+total_columns = vif_data.shape[1]
+columns_to_be_kept = []
+column_index = 0
+
+
+
+for i in range (0,total_columns):
+    
+    vif_value = variance_inflation_factor(vif_data, column_index)
+    print (column_index,'---',vif_value)
+    
+    
+    if vif_value <= 6:
+        columns_to_be_kept.append( numeric_columns[i] )
+        column_index = column_index+1
+    
+    else:
+        vif_data = vif_data.drop([ numeric_columns[i] ] , axis=1)
+
+   
