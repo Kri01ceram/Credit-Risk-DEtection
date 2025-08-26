@@ -95,4 +95,24 @@ for i in range (0,total_columns):
     else:
         vif_data = vif_data.drop([ numeric_columns[i] ] , axis=1)
 
+# check Anova for columns_to_be_kept 
+
+from scipy.stats import f_oneway
+
+columns_to_be_kept_numerical = []
+
+for i in columns_to_be_kept:
+    a = list(df[i])  
+    b = list(df['Approved_Flag'])  
+    
+    group_P1 = [value for value, group in zip(a, b) if group == 'P1']
+    group_P2 = [value for value, group in zip(a, b) if group == 'P2']
+    group_P3 = [value for value, group in zip(a, b) if group == 'P3']
+    group_P4 = [value for value, group in zip(a, b) if group == 'P4']
+
+
+    f_statistic, p_value = f_oneway(group_P1, group_P2, group_P3, group_P4)
+
+    if p_value <= 0.05:
+        columns_to_be_kept_numerical.append(i)
    
