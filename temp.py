@@ -308,6 +308,158 @@ for i, v in enumerate(['p1', 'p2', 'p3', 'p4']):
     print()
 
 
+# xgboost is giving me best results
+# We will further finetune it
+
+
+# Apply standard scaler 
+
+from sklearn.preprocessing import StandardScaler
+
+columns_to_be_scaled = ['Age_Oldest_TL','Age_Newest_TL','time_since_recent_payment',
+'max_recent_level_of_deliq','recent_level_of_deliq',
+'time_since_recent_enq','NETMONTHLYINCOME','Time_With_Curr_Empr']
+
+for i in columns_to_be_scaled:
+    column_data = df_encoded[i].values.reshape(-1, 1)
+    scaler = StandardScaler()
+    scaled_column = scaler.fit_transform(column_data)
+    df_encoded[i] = scaled_column
+
+
+
+import xgboost as xgb
+from sklearn.preprocessing import LabelEncoder
+
+xgb_classifier = xgb.XGBClassifier(objective='multi:softmax',  num_class=4)
+
+
+
+y = df_encoded['Approved_Flag']
+x = df_encoded. drop ( ['Approved_Flag'], axis = 1 )
+
+
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(y)
+
+
+x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.2, random_state=42)
+
+
+
+
+xgb_classifier.fit(x_train, y_train)
+y_pred = xgb_classifier.predict(x_test)
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f'Accuracy: {accuracy:.2f}')
+
+
+precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred)
+
+for i, v in enumerate(['p1', 'p2', 'p3', 'p4']):
+    print(f"Class {v}:")
+    print(f"Precision: {precision[i]}")
+    print(f"Recall: {recall[i]}")
+    print(f"F1 Score: {f1_score[i]}")
+    print()
+    
+    
+    
+# No improvement in metrices
+
+
+ # Hyperparameter tuning for xgboost (Used in the session)
+
+ # Define the hyperparameter grid
+ param_grid = {
+   'colsample_bytree': [0.1, 0.3, 0.5, 0.7, 0.9],
+   'learning_rate'   : [0.001, 0.01, 0.1, 1],
+   'max_depth'       : [3, 5, 8, 10],
+   'alpha'           : [1, 10, 100],
+   'n_estimators'    : [10,50,100]
+ }
+
+ index = 0
+
+ answers_grid = {
+     'combination'       :[],
+     'train_Accuracy'    :[],
+     'test_Accuracy'     :[],
+     'colsample_bytree'  :[],
+     'learning_rate'     :[],
+     'max_depth'         :[],
+     'alpha'             :[],
+     'n_estimators'      :[]
+
+     }
+
+
+ # Loop through each combination of hyperparameters
+ for colsample_bytree in param_grid['colsample_bytree']:
+   for learning_rate in param_grid['learning_rate']:
+     for max_depth in param_grid['max_depth']:
+       for alpha in param_grid['alpha']:
+           for n_estimators in param_grid['n_estimators']:
+             
+               index = index + 1
+             
+               # Define and train the XGBoost model
+               model = xgb.XGBClassifier(objective='multi:softmax',  
+                                        num_class=4,
+                                        colsample_bytree = colsample_bytree,
+                                        learning_rate = learning_rate,
+                                        max_depth = max_depth,
+                                        alpha = alpha,
+                                        n_estimators = n_estimators)
+               
+       
+                     
+               y = df_encoded['Approved_Flag']
+               x = df_encoded. drop ( ['Approved_Flag'], axis = 1 )
+
+               label_encoder = LabelEncoder()
+               y_encoded = label_encoder.fit_transform(y)
+
+
+               x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.2, random_state=42)
+
+
+               model.fit(x_train, y_train)
+  
+
+       
+               # Predict on training and testing sets
+               y_pred_train = model.predict(x_train)
+               y_pred_test = model.predict(x_test)
+       
+       
+              # Calculate train and test results
+              
+               train_accuracy =  accuracy_score (y_train, y_pred_train)
+               test_accuracy  =  accuracy_score (y_test , y_pred_test)
+              
+              
+       
+              # Include into the lists
+               answers_grid ['combination']   .append(index)
+               answers_grid ['train_Accuracy']    .append(train_accuracy)
+               answers_grid ['test_Accuracy']     .append(test_accuracy)
+               answers_grid ['colsample_bytree']   .append(colsample_bytree)
+               answers_grid ['learning_rate']      .append(learning_rate)
+               answers_grid ['max_depth']          .append(max_depth)
+               answers_grid ['alpha']              .append(alpha)
+               answers_grid ['n_estimators']       .append(n_estimators)
+       
+       
+               # Print results for this combination
+               print(f"Combination {index}")
+               print(f"colsample_bytree: {colsample_bytree}, learning_rate: {learning_rate}, max_depth: {max_depth}, alpha: {alpha}, n_estimators: {n_estimators}")
+               print(f"Train Accuracy: {train_accuracy:.2f}")
+               print(f"Test Accuracy : {test_accuracy :.2f}")
+               print("-" * 30)
+
+
 
 
 
